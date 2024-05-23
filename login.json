@@ -1,0 +1,15 @@
+{
+  "league-path": "blahblah",
+  "Accounts": [
+    {
+      "Username": "username1",
+      "Password": "Password1",
+      "role": "Mid"
+    },
+    {
+      "Username": "username2",
+      "Password": "Password2",
+      "role": "Support"
+    }
+  ]
+}
