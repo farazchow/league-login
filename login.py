@@ -110,7 +110,7 @@ def createWindow():
             text=account_data["Username"],
             image=image_paths[account_data["role"]],
             compound="left",
-            command=lambda: chooseAccount(account_data, data["league-path"], printToWindow, root.destroy),
+            command=lambda: chooseAccount(account_data, data["riot-path"], printToWindow, root.destroy),
         )
         account.pack()
 
@@ -130,13 +130,13 @@ def createWindow():
     root.mainloop()
 
 
-def chooseAccount(acct, league_path, debug_func, destroy_func):
-    subprocess.run(league_path)
+def chooseAccount(acct, riot_path, debug_func, destroy_func):
+    subprocess.run(riot_path)
     keyboard.type(acct["Username"])
     keyboard.tap(Key.tab)
 
     keyboard.type(acct["Password"])
-    for i in range(6):
+    for _ in range(6):
         keyboard.tap(Key.tab)
 
     keyboard.tap(Key.enter)
