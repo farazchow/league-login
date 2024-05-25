@@ -113,7 +113,7 @@ def createWindow():
 
     # Stay signed in?
     signed_in = tk.BooleanVar(root, False)
-    signed_in_box = ttk.Checkbutton(option_frame, text="Stay Signed In?", variable=signed_in, command= lambda: printToWindow("Will stay signed in"))
+    signed_in_box = ttk.Checkbutton(option_frame, text="Stay Signed In?", variable=signed_in, command= lambda: printToWindow("Will stay signed in") if signed_in.get() else printToWindow("Will not stay signed out"))
     signed_in_box.grid(column=2, row=1)
 
     # Populate Accounts
@@ -156,11 +156,11 @@ def createWindow():
 def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
     # Start Riot Client
     subprocess.run(riot_path)
+    debug_func("Looking for client")
     win_wait_active(win_to_wait="Riot Client", message=True)
     time.sleep(3)
 
     # Input Info & Login
-    print("Trying to type")
     keyboard.type(acct["Username"])
     keyboard.tap(Key.tab)
     keyboard.type(acct["Password"])
@@ -170,7 +170,6 @@ def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
             keyboard.tap(Key.enter)
         keyboard.tap(Key.tab)
     keyboard.tap(Key.enter)
-    print("logged in?")
     time.sleep(5)
 
     # Choose Game
@@ -186,8 +185,7 @@ def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
 
     time.sleep(5)
     subprocess.call("taskkill /F /IM \"Riot Client.EXE\"")
-    # debug_func("end")
-    print("end")
+    debug_func("end")
     destroy_func()
 
 
