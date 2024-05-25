@@ -19,13 +19,22 @@ tab_locations = {
     "login": 8,
     "league": 7,
     "val": 9,
-    "enter_game": 9
+    "enter_game": 8
 }
 
 def load_data():
     file = open("login.json")
     user_data = json.load(file)
     return user_data
+
+def process_exists(process_name):
+    call = 'TASKLIST', '/FI', 'imagename eq %s' % process_name
+    # use buildin check_output right away
+    output = subprocess.check_output(call).decode()
+    # check in last line for process name
+    last_line = output.strip().split('\r\n')[-1]
+    # because Fail message could be translated
+    return last_line.lower().startswith(process_name.lower())
 
 def setup_debug(debug_frame):
     # Logging/Debug Window
@@ -87,6 +96,7 @@ def createWindow():
     # Init window
     root = tk.Tk()
     root.title("Choose your account!")
+    root.iconbitmap("images/LoL_logo.ico")
 
     mainframe = ttk.Frame(root)
 
@@ -136,6 +146,7 @@ def createWindow():
             image=image_paths[account_data["role"]],
             compound="left",
             command=lambda a = account_data: chooseAccount(a, data["riot-path"], printToWindow, root.destroy, game.get(), signed_in.get()),
+            width=35
         )
         account.pack()
     
@@ -154,6 +165,10 @@ def createWindow():
 
 
 def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
+    if process_exists("Riot Client.EXE"):
+        debug_func("Client already open. \nPlease sign out and close client.")
+        return        
+
     # Start Riot Client
     subprocess.run(riot_path)
     debug_func("Looking for client")
@@ -176,7 +191,7 @@ def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
     for tabs in range(1, tab_locations[game]):
         keyboard.tap(Key.tab)
     keyboard.tap(Key.enter)
-    time.sleep(5)
+    time.sleep(2)
 
     # Enter game
     for tabs in range(1, tab_locations["enter_game"]):
