@@ -1,16 +1,25 @@
 import subprocess
-
 from pynput.keyboard import Controller, Key
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
 import json
 from PIL import Image, ImageTk
+from pyWinActivate import win_wait_active
 
 keyboard = Controller()
 character_width = 8
 character_height = 16
 image_size = (64, 64)
+
+tab_locations = {
+    "username": 0,
+    "password": 1,
+    "stay_signed_in": 7,
+    "login": 8,
+    "league": 8,
+    "val": 10
+}
 
 def load_data():
     file = open("login.json")
@@ -110,15 +119,13 @@ def createWindow():
             text=account_data["Username"],
             image=image_paths[account_data["role"]],
             compound="left",
-            command=lambda: chooseAccount(account_data, data["riot-path"], printToWindow, root.destroy),
+            command=lambda a = account_data: chooseAccount(a, data["riot-path"], printToWindow, root.destroy),
         )
         account.pack()
-
-
+    
     # Grid (Frames)
     mainframe.grid(column=0, row=0)
     label.grid(column=0, row=0, columnspan=2, rowspan=1, pady=15)
-
     account_frame.grid(
         column=0, row=1, columnspan=1, rowspan=2, padx=(25, 25), pady=(0, 20)
     )
@@ -132,16 +139,19 @@ def createWindow():
 
 def chooseAccount(acct, riot_path, debug_func, destroy_func):
     subprocess.run(riot_path)
+    win_wait_active(win_to_wait="Riot Client", message=False)
+    time.sleep(2.5)
+    debug_func(acct["role"])
     keyboard.type(acct["Username"])
     keyboard.tap(Key.tab)
 
     keyboard.type(acct["Password"])
-    for _ in range(6):
+    for _ in range(7):
         keyboard.tap(Key.tab)
 
     keyboard.tap(Key.enter)
     time.sleep(15)
-    subprocess.call("taskkill /F /IM RiotClientUx.EXE")
+    subprocess.call("taskkill /F /IM \"Riot Client.EXE\"")
     debug_func("end")
     destroy_func()
 
