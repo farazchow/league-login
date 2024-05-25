@@ -17,8 +17,9 @@ tab_locations = {
     "password": 1,
     "stay_signed_in": 7,
     "login": 8,
-    "league": 8,
-    "val": 10
+    "league": 7,
+    "val": 9,
+    "enter_game": 9
 }
 
 def load_data():
@@ -94,11 +95,26 @@ def createWindow():
 
     # Frames
     account_frame = ttk.Frame(mainframe, relief="ridge", width=200, height=400)
-    option_frame = ttk.Frame(mainframe, relief="ridge", width=200, height=150)
-    debug_frame = ttk.Frame(mainframe, relief="solid", width=200, height=300)
+    option_frame = ttk.Frame(mainframe, width=400, height=150)
+    debug_frame = ttk.Frame(mainframe, relief="solid", width=400, height=300)
 
     # Logging/Debug Window
     log = setup_debug(debug_frame)
+
+    # Options
+    # League or Val?
+    game_label = ttk.Label(option_frame, text="What game to play?")
+    game = tk.StringVar(root, "league")
+    lol = ttk.Radiobutton(option_frame, text="League", variable=game, value="league", command=lambda: printToWindow("Will load League"), padding=10)
+    val = ttk.Radiobutton(option_frame, text="Valorant", variable=game, value="val", command=lambda: printToWindow("Will load Valorant"), padding=10)
+    game_label.grid(column=1, row=0)
+    lol.grid(column=0, row=1)
+    val.grid(column=0, row=2)
+
+    # Stay signed in?
+    signed_in = tk.BooleanVar(root, False)
+    signed_in_box = ttk.Checkbutton(option_frame, text="Stay Signed In?", variable=signed_in, command= lambda: printToWindow("Will stay signed in"))
+    signed_in_box.grid(column=2, row=1)
 
     # Populate Accounts
     image_paths = {
@@ -119,7 +135,7 @@ def createWindow():
             text=account_data["Username"],
             image=image_paths[account_data["role"]],
             compound="left",
-            command=lambda a = account_data: chooseAccount(a, data["riot-path"], printToWindow, root.destroy),
+            command=lambda a = account_data: chooseAccount(a, data["riot-path"], printToWindow, root.destroy, game.get(), signed_in.get()),
         )
         account.pack()
     
@@ -137,22 +153,41 @@ def createWindow():
     root.mainloop()
 
 
-def chooseAccount(acct, riot_path, debug_func, destroy_func):
+def chooseAccount(acct, riot_path, debug_func, destroy_func, game, signed_in):
+    # Start Riot Client
     subprocess.run(riot_path)
-    win_wait_active(win_to_wait="Riot Client", message=False)
-    time.sleep(2.5)
-    debug_func(acct["role"])
+    win_wait_active(win_to_wait="Riot Client", message=True)
+    time.sleep(3)
+
+    # Input Info & Login
+    print("Trying to type")
     keyboard.type(acct["Username"])
     keyboard.tap(Key.tab)
-
     keyboard.type(acct["Password"])
-    for _ in range(7):
-        keyboard.tap(Key.tab)
 
+    for tabs in range(1, tab_locations["login"]):
+        if tabs == tab_locations["stay_signed_in"] and signed_in:
+            keyboard.tap(Key.enter)
+        keyboard.tap(Key.tab)
     keyboard.tap(Key.enter)
-    time.sleep(15)
+    print("logged in?")
+    time.sleep(5)
+
+    # Choose Game
+    for tabs in range(1, tab_locations[game]):
+        keyboard.tap(Key.tab)
+    keyboard.tap(Key.enter)
+    time.sleep(5)
+
+    # Enter game
+    for tabs in range(1, tab_locations["enter_game"]):
+        keyboard.tap(Key.tab)
+    keyboard.tap(Key.enter)
+
+    time.sleep(5)
     subprocess.call("taskkill /F /IM \"Riot Client.EXE\"")
-    debug_func("end")
+    # debug_func("end")
+    print("end")
     destroy_func()
 
 
